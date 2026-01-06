@@ -1,0 +1,32 @@
+name: Deploy Wasm to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      # Wasm 정적 파일 생성
+      - name: Build with Gradle
+        run: ./gradlew :composeApp:wasmJsBrowserDistribution
+
+      # GitHub Pages 배포 (peaceiris 액션 사용)
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # 빌드 결과물이 생성되는 경로 (프로젝트 구조에 따라 확인 필요)
+          publish_dir: ./composeApp/build/dist/wasmJs/productionExecutable
